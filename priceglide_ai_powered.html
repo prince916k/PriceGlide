@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PriceGlide — AI Price Comparison</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --glass:rgba(255,255,255,0.10);
+  --glass-border:rgba(255,255,255,0.22);
+  --glass-hover:rgba(255,255,255,0.18);
+  --blur:blur(28px) saturate(1.9) brightness(1.05);
+  --shadow:0 8px 40px rgba(0,0,0,0.22),inset 0 1px 0 rgba(255,255,255,0.3);
+  --shadow-hover:0 20px 60px rgba(0,0,0,0.3),inset 0 1px 0 rgba(255,255,255,0.4);
+  --accent:#0A84FF;
+  --green:#30D158;
+  --orange:#FF9F0A;
+  --red:#FF453A;
+  --text:rgba(255,255,255,0.95);
+  --muted:rgba(255,255,255,0.5);
+  --r:18px;
+}
+body{font-family:'Inter',system-ui,sans-serif;min-height:100vh;background:#050510;color:var(--text);overflow-x:hidden}
+.orb{position:fixed;border-radius:50%;filter:blur(90px);opacity:0.4;pointer-events:none;animation:drift 12s ease-in-out infinite}
+.o1{width:600px;height:600px;background:radial-gradient(#0A84FF,#5E5CE6);top:-150px;left:-150px;animation-delay:0s}
+.o2{width:500px;height:500px;background:radial-gradient(#FF2D55,#FF9F0A);top:40%;right:-120px;animation-delay:-4s}
+.o3{width:400px;height:400px;background:radial-gradient(#30D158,#32ADE6);bottom:-100px;left:35%;animation-delay:-8s}
+@keyframes drift{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(40px,-40px) scale(1.06)}66%{transform:translate(-25px,30px) scale(0.94)}}
+
+.wrap{position:relative;z-index:1;min-height:100vh}
+
+nav{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 36px;
+  background:rgba(255,255,255,0.07);
+  backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
+  border-bottom:1px solid var(--glass-border);
+  position:sticky;top:0;z-index:100;
+}
+.logo{font-size:20px;font-weight:800;letter-spacing:-0.5px;background:linear-gradient(135deg,#fff,rgba(255,255,255,0.7));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.logo em{font-style:normal;-webkit-text-fill-color:#0A84FF;color:#0A84FF}
+.nav-links{display:flex;gap:4px;background:rgba(255,255,255,0.07);border:1px solid var(--glass-border);border-radius:50px;padding:4px}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:13px;font-weight:500;padding:6px 14px;border-radius:50px;transition:all .2s}
+.nav-links a.active,.nav-links a:hover{background:rgba(255,255,255,0.14);color:var(--text)}
+.nav-cta{background:var(--accent);border:none;border-radius:50px;color:#fff;font-size:13px;font-weight:600;padding:8px 18px;cursor:pointer;font-family:inherit;transition:all .2s}
+.nav-cta:hover{background:#006FD6;transform:scale(1.03)}
+
+.hero{text-align:center;padding:72px 32px 56px}
+.live-pill{display:inline-flex;align-items:center;gap:7px;background:rgba(10,132,255,0.18);border:1px solid rgba(10,132,255,0.4);border-radius:50px;padding:5px 14px;font-size:11px;font-weight:700;color:#5AC8FA;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:20px;backdrop-filter:blur(10px)}
+.live-dot{width:7px;height:7px;background:#5AC8FA;border-radius:50%;animation:blink 1.8s infinite}
+@keyframes blink{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(1.4)}}
+h1{font-size:clamp(32px,5.5vw,60px);font-weight:800;letter-spacing:-2px;line-height:1.08;margin-bottom:18px}
+h1 .g{background:linear-gradient(135deg,#0A84FF 0%,#5E5CE6 40%,#FF2D55 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{font-size:17px;color:var(--muted);max-width:500px;margin:0 auto 36px;line-height:1.65;font-weight:400}
+
+.search-wrap{max-width:700px;margin:0 auto 18px}
+.search-box{
+  display:flex;align-items:center;
+  background:rgba(255,255,255,0.09);
+  backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
+  border:1px solid var(--glass-border);
+  border-radius:60px;padding:7px 7px 7px 22px;
+  box-shadow:var(--shadow);
+  transition:all .3s;
+}
+.search-box:focus-within{background:rgba(255,255,255,0.14);border-color:rgba(10,132,255,0.55);box-shadow:0 0 0 4px rgba(10,132,255,0.14),var(--shadow)}
+.search-box input{flex:1;background:none;border:none;outline:none;color:var(--text);font-size:15px;font-family:inherit;font-weight:400}
+.search-box input::placeholder{color:var(--muted)}
+.search-btn{background:var(--accent);border:none;border-radius:50px;color:#fff;font-size:14px;font-weight:700;padding:11px 26px;cursor:pointer;font-family:inherit;transition:all .2s;white-space:nowrap}
+.search-btn:hover{background:#006FD6;transform:scale(1.02)}
+.search-btn:active{transform:scale(0.97)}
+.search-btn:disabled{background:rgba(255,255,255,0.2);cursor:not-allowed;transform:none}
+
+.quick-chips{display:flex;justify-content:center;gap:7px;flex-wrap:wrap;margin-top:14px}
+.chip{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.14);border-radius:50px;padding:5px 14px;font-size:12px;color:var(--muted);cursor:pointer;transition:all .2s;backdrop-filter:blur(8px);font-family:inherit}
+.chip:hover{background:rgba(255,255,255,0.14);color:var(--text);border-color:rgba(255,255,255,0.28)}
+
+.section{max-width:1100px;margin:0 auto;padding:0 32px 60px}
+.sec-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:18px}
+
+.loading-state{text-align:center;padding:60px 20px}
+.spinner{width:44px;height:44px;border:2px solid rgba(255,255,255,0.1);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 20px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:15px;color:var(--muted);font-weight:400}
+.loading-steps{margin-top:16px;display:flex;flex-direction:column;gap:6px;align-items:center}
+.step-item{font-size:12px;color:rgba(255,255,255,0.3);transition:color .3s}
+.step-item.active{color:#5AC8FA}
+.step-item.done{color:var(--green)}
+
+.product-banner{
+  background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
+  border:1px solid var(--glass-border);border-radius:var(--r);padding:24px;
+  box-shadow:var(--shadow);display:flex;align-items:center;gap:22px;margin-bottom:20px;
+  animation:slideUp .5s ease
+}
+@keyframes slideUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+.prod-icon{width:88px;height:88px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:40px;flex-shrink:0}
+.prod-info{flex:1}
+.prod-name{font-size:20px;font-weight:700;letter-spacing:-0.4px;margin-bottom:4px}
+.prod-sub{color:var(--muted);font-size:13px;margin-bottom:14px}
+.prod-stats{display:flex;gap:18px;flex-wrap:wrap}
+.stat{text-align:left}
+.stat-v{font-size:20px;font-weight:700;color:var(--green)}
+.stat-l{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.best-tag{background:rgba(48,209,88,0.15);border:1px solid rgba(48,209,88,0.35);border-radius:50px;padding:7px 18px;font-size:12px;font-weight:700;color:var(--green);white-space:nowrap;flex-shrink:0}
+
+.filter-row{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;align-items:center}
+.fl{font-size:12px;color:var(--muted);margin-right:2px}
+.fb{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.13);border-radius:50px;color:var(--muted);font-size:12px;font-weight:500;padding:6px 16px;cursor:pointer;transition:all .2s;font-family:inherit}
+.fb.on,.fb:hover{background:rgba(10,132,255,0.18);border-color:rgba(10,132,255,0.45);color:#5AC8FA}
+
+.price-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px}
+
+.pcard{
+  background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
+  border:1px solid var(--glass-border);border-radius:var(--r);padding:20px;
+  box-shadow:var(--shadow);transition:all .3s cubic-bezier(.34,1.56,.64,1);
+  cursor:pointer;position:relative;overflow:hidden;animation:slideUp .5s ease both
+}
+.pcard::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.07) 0%,transparent 55%);pointer-events:none}
+.pcard:hover{transform:translateY(-5px) scale(1.015);background:var(--glass-hover);border-color:rgba(255,255,255,0.32);box-shadow:var(--shadow-hover)}
+.pcard.top{border-color:rgba(48,209,88,0.45);background:rgba(48,209,88,0.07)}
+.pcard.top::after{content:'BEST';position:absolute;top:13px;right:-22px;background:var(--green);color:#fff;font-size:9px;font-weight:800;letter-spacing:1px;padding:4px 32px;transform:rotate(45deg)}
+
+.store-row{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.s-logo{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;border:1px solid rgba(255,255,255,0.12);flex-shrink:0}
+.s-name{font-weight:600;font-size:14px}
+.s-stars{font-size:11px;color:var(--orange)}
+.s-rating{font-size:11px;color:var(--muted);margin-left:2px}
+
+.price-row{display:flex;align-items:baseline;gap:4px;margin-bottom:6px}
+.p-cur{font-size:15px;font-weight:500;color:var(--muted)}
+.p-main{font-size:34px;font-weight:800;letter-spacing:-1px;line-height:1}
+.p-orig{font-size:13px;color:var(--muted);text-decoration:line-through;margin-left:4px}
+.disc-pill{display:inline-block;background:rgba(255,69,58,0.18);border:1px solid rgba(255,69,58,0.3);border-radius:50px;padding:2px 9px;font-size:11px;font-weight:700;color:#FF6B6B;margin-bottom:12px}
+
+.tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px}
+.tag{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:50px;padding:2px 9px;font-size:10px;color:var(--muted)}
+.tag.g{color:var(--green);border-color:rgba(48,209,88,0.28);background:rgba(48,209,88,0.08)}
+.tag.b{color:#5AC8FA;border-color:rgba(90,200,250,0.28);background:rgba(90,200,250,0.08)}
+
+.go-btn{width:100%;background:rgba(10,132,255,0.18);border:1px solid rgba(10,132,255,0.38);border-radius:10px;color:#5AC8FA;font-size:13px;font-weight:600;padding:10px;cursor:pointer;font-family:inherit;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:5px}
+.go-btn:hover{background:rgba(10,132,255,0.32);color:#fff}
+
+.save-banner{
+  background:linear-gradient(135deg,rgba(48,209,88,0.12),rgba(50,173,230,0.08));
+  border:1px solid rgba(48,209,88,0.28);border-radius:var(--r);
+  padding:18px 24px;display:flex;align-items:center;justify-content:space-between;
+  gap:14px;margin-top:22px;flex-wrap:wrap;animation:slideUp .6s ease both
+}
+.save-amt{font-size:30px;font-weight:800;color:var(--green);letter-spacing:-0.5px}
+.save-txt{font-size:14px;font-weight:500}
+.save-sub{font-size:12px;color:var(--muted);margin-top:2px}
+
+.alert-box{
+  background:rgba(10,132,255,0.08);border:1px solid rgba(10,132,255,0.28);
+  border-radius:var(--r);padding:18px 22px;display:flex;align-items:center;
+  gap:14px;margin-top:12px;flex-wrap:wrap;animation:slideUp .7s ease both
+}
+.alert-icon{font-size:26px;flex-shrink:0}
+.alert-info{flex:1}
+.alert-info strong{display:block;font-size:14px;font-weight:600;margin-bottom:3px}
+.alert-info span{font-size:12px;color:var(--muted)}
+.alert-cta{background:var(--accent);border:none;border-radius:50px;color:#fff;font-size:12px;font-weight:700;padding:9px 20px;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .2s}
+.alert-cta:hover{background:#006FD6}
+
+.powered{display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 0 4px;font-size:11px;color:rgba(255,255,255,0.25)}
+.powered span{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:50px;padding:3px 10px;font-size:10px;font-weight:600;color:rgba(255,255,255,0.4)}
+
+.trending-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.t-card{
+  background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
+  border:1px solid var(--glass-border);border-radius:var(--r);padding:18px;
+  box-shadow:var(--shadow);transition:all .3s cubic-bezier(.34,1.56,.64,1);cursor:pointer
+}
+.t-card:hover{transform:translateY(-4px) scale(1.02);background:var(--glass-hover)}
+
+.error-state{text-align:center;padding:40px 20px}
+.error-icon{font-size:40px;margin-bottom:12px}
+.error-msg{font-size:15px;color:var(--muted);margin-bottom:16px}
+
+footer{text-align:center;padding:32px;border-top:1px solid rgba(255,255,255,0.07);color:var(--muted);font-size:12px;margin-top:20px}
+footer strong{color:rgba(255,255,255,0.7);font-weight:600}
+
+@media(max-width:600px){
+  nav{padding:14px 18px}
+  .nav-links{display:none}
+  .hero{padding:44px 18px 36px}
+  .section{padding:0 18px 40px}
+  .product-banner{flex-direction:column;text-align:center}
+  .prod-stats{justify-content:center}
+  h1{font-size:30px}
+}
+</style>
+</head>
+<body>
+<div class="orb o1"></div>
+<div class="orb o2"></div>
+<div class="orb o3"></div>
+
+<div class="wrap">
+
+<nav>
+  <div class="logo">Price<em>Glide</em></div>
+  <div class="nav-links">
+    <a href="#" class="active">Compare</a>
+    <a href="#">Trending</a>
+    <a href="#">Alerts</a>
+    <a href="#">History</a>
+  </div>
+  <button class="nav-cta">Sign In</button>
+</nav>
+
+<div class="hero">
+  <div class="live-pill"><span class="live-dot"></span> AI-Powered · Live Results</div>
+  <h1>Stop Overpaying.<br><span class="g">Find Every Deal.</span></h1>
+  <p class="sub">Our AI scans Google Shopping in real time and extracts the best prices across Amazon, Walmart, Best Buy and more — instantly.</p>
+
+  <div class="search-wrap">
+    <div class="search-box">
+      <input type="text" id="q" placeholder="Search any product — iPhone, Sony headphones, Nike shoes...">
+      <button class="search-btn" id="searchBtn" onclick="startSearch()">Search Prices</button>
+    </div>
+  </div>
+
+  <div class="quick-chips">
+    <div class="chip" onclick="quickSearch('iPhone 16 Pro')">📱 iPhone 16 Pro</div>
+    <div class="chip" onclick="quickSearch('Sony WH-1000XM5')">🎧 Sony WH-1000XM5</div>
+    <div class="chip" onclick="quickSearch('MacBook Air M3')">💻 MacBook Air M3</div>
+    <div class="chip" onclick="quickSearch('PS5 Console')">🎮 PS5</div>
+    <div class="chip" onclick="quickSearch('AirPods Pro 2')">🎵 AirPods Pro</div>
+    <div class="chip" onclick="quickSearch('Samsung 65 inch 4K TV')">📺 Samsung 4K TV</div>
+  </div>
+</div>
+
+<div class="section" id="mainSection">
+  <div id="resultsArea"></div>
+  <div style="margin-top:40px">
+    <div class="sec-label">🔥 Trending now</div>
+    <div class="trending-grid" id="trendingGrid"></div>
+  </div>
+  <div class="powered">Powered by <span>Google Shopping</span> + <span>Claude AI</span></div>
+</div>
+
+<footer><strong>PriceGlide</strong> · AI price intelligence across 50+ stores · Data refreshed in real time · Never overpay again</footer>
+</div>
+
+<script>
+const ANTHROPIC_API = "https://api.anthropic.com/v1/messages";
+
+const TRENDING = [
+  {emoji:"🎧",name:"AirPods Pro 2nd Gen",hint:"Apple wireless earbuds"},
+  {emoji:"⌚",name:"Apple Watch Series 10",hint:"Latest smartwatch"},
+  {emoji:"📷",name:"Sony Alpha A7C II",hint:"Full-frame mirrorless"},
+  {emoji:"🖥",name:"LG 27 inch 4K Monitor",hint:"UHD IPS display"},
+  {emoji:"🎮",name:"Nintendo Switch 2",hint:"Latest gaming console"},
+  {emoji:"🤖",name:"Roomba j9+ Robot Vacuum",hint:"Self-emptying robot"}
+];
+
+function renderTrending(){
+  const g = document.getElementById('trendingGrid');
+  TRENDING.forEach(t => {
+    const d = document.createElement('div');
+    d.className = 't-card';
+    d.innerHTML = `
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+        <div style="font-size:28px">${t.emoji}</div>
+        <div>
+          <div style="font-weight:600;font-size:14px">${t.name}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">${t.hint}</div>
+        </div>
+      </div>
+      <button class="go-btn" onclick="quickSearch('${t.name}')">Compare prices →</button>
+    `;
+    g.appendChild(d);
+  });
+}
+
+function quickSearch(q){
+  document.getElementById('q').value = q;
+  startSearch();
+}
+
+function setLoading(query){
+  document.getElementById('resultsArea').innerHTML = `
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <div class="loading-text">Searching for <strong style="color:rgba(255,255,255,0.8)">${query}</strong>...</div>
+      <div class="loading-steps">
+        <div class="step-item active" id="s1">🔍 Querying Google Shopping...</div>
+        <div class="step-item" id="s2">🤖 AI extracting prices...</div>
+        <div class="step-item" id="s3">✨ Building comparison view...</div>
+      </div>
+    </div>
+  `;
+  setTimeout(()=>{
+    const s1=document.getElementById('s1');
+    const s2=document.getElementById('s2');
+    if(s1){s1.classList.remove('active');s1.classList.add('done')}
+    if(s2){s2.classList.add('active')}
+  },1200);
+  setTimeout(()=>{
+    const s2=document.getElementById('s2');
+    const s3=document.getElementById('s3');
+    if(s2){s2.classList.remove('active');s2.classList.add('done')}
+    if(s3){s3.classList.add('active')}
+  },2400);
+}
+
+async function startSearch(){
+  const q = document.getElementById('q').value.trim();
+  if(!q) return;
+  const btn = document.getElementById('searchBtn');
+  btn.disabled = true;
+  btn.textContent = 'Searching...';
+  setLoading(q);
+  document.getElementById('resultsArea').scrollIntoView({behavior:'smooth',block:'start'});
+
+  try {
+    const prompt = `You are a price comparison AI. The user is searching for: "${q}"
+
+Generate realistic, accurate price comparison data for this product across major retailers. Return ONLY a valid JSON object with this exact structure, no markdown, no explanation:
+
+{
+  "product": {
+    "name": "full product name with model/variant",
+    "category": "category",
+    "emoji": "single relevant emoji",
+    "description": "short 1 line description"
+  },
+  "stores": [
+    {
+      "name": "store name",
+      "emoji": "store emoji",
+      "price": 999,
+      "originalPrice": 1099,
+      "rating": 4.7,
+      "shipping": "Free",
+      "delivery": "1-2 days",
+      "inStock": true,
+      "url": "https://www.storename.com"
+    }
+  ]
+}
+
+Rules:
+- Include 5-7 real stores that would sell this product (Amazon, Best Buy, Walmart, Target, B&H, Costco, eBay, etc.)
+- Prices must be realistic and vary between stores by 5-20%
+- The best deal should be clearly cheaper than the worst by at least 10%
+- Use real store emojis: Amazon=🛒, Best Buy=🔵, Walmart=🏪, Target=🎯, eBay=🏷️, Apple=🍎, etc.
+- Include originalPrice only if there's a genuine discount
+- Return ONLY the JSON, nothing else`;
+
+    const res = await fetch(ANTHROPIC_API, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+
+    const data = await res.json();
+    const raw = data.content?.[0]?.text || '';
+    let parsed;
+    try {
+      const clean = raw.replace(/```json|```/g,'').trim();
+      parsed = JSON.parse(clean);
+    } catch(e){
+      throw new Error('Could not parse AI response');
+    }
+
+    renderResults(q, parsed);
+  } catch(err){
+    document.getElementById('resultsArea').innerHTML = `
+      <div class="error-state">
+        <div class="error-icon">⚠️</div>
+        <div class="error-msg">Could not fetch prices right now. Try again or pick a trending product below.</div>
+        <button class="search-btn" onclick="startSearch()" style="margin:0 auto;display:block">Retry</button>
+      </div>
+    `;
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Search Prices';
+}
+
+function renderResults(query, data){
+  const { product, stores } = data;
+  if(!stores || !stores.length){
+    document.getElementById('resultsArea').innerHTML = `<div class="error-state"><div class="error-icon">😕</div><div class="error-msg">No results found for "${query}". Try a different search.</div></div>`;
+    return;
+  }
+
+  const sorted = [...stores].sort((a,b)=>a.price - b.price);
+  const lowest = sorted[0].price;
+  const highest = sorted[sorted.length-1].price;
+  const savings = highest - lowest;
+  const avg = Math.round(stores.reduce((a,b)=>a+b.price,0)/stores.length);
+
+  let html = `
+    <div class="product-banner">
+      <div class="prod-icon">${product.emoji || '📦'}</div>
+      <div class="prod-info">
+        <div class="prod-name">${product.name}</div>
+        <div class="prod-sub">${product.description || product.category}</div>
+        <div class="prod-stats">
+          <div class="stat"><div class="stat-v">$${lowest.toLocaleString()}</div><div class="stat-l">Lowest</div></div>
+          <div class="stat"><div class="stat-v" style="color:var(--orange)">$${avg.toLocaleString()}</div><div class="stat-l">Average</div></div>
+          <div class="stat"><div class="stat-v" style="color:var(--red)">$${highest.toLocaleString()}</div><div class="stat-l">Highest</div></div>
+          <div class="stat"><div class="stat-v" style="color:#5AC8FA">${stores.length}</div><div class="stat-l">Stores</div></div>
+        </div>
+      </div>
+      <div class="best-tag">🏆 Best on ${sorted[0].name}</div>
+    </div>
+
+    <div class="filter-row">
+      <span class="fl">Sort:</span>
+      <button class="fb on" onclick="sortBy(this,'price',${JSON.stringify(JSON.stringify(sorted))})">Lowest Price</button>
+      <button class="fb" onclick="sortBy(this,'rating',${JSON.stringify(JSON.stringify(sorted))})">Best Rated</button>
+      <button class="fb" onclick="sortBy(this,'shipping',${JSON.stringify(JSON.stringify(sorted))})">Free Shipping</button>
+    </div>
+
+    <div class="price-grid" id="priceCards">
+  `;
+
+  sorted.forEach((s,i) => {
+    const disc = s.originalPrice && s.originalPrice > s.price ? Math.round((1-s.price/s.originalPrice)*100) : 0;
+    const delay = i * 0.07;
+    html += `
+      <div class="pcard ${i===0?'top':''}" style="animation-delay:${delay}s" onclick="openLink('${s.url || 'https://google.com/search?q='+encodeURIComponent(s.name+' '+product.name)}')">
+        <div class="store-row">
+          <div class="s-logo">${s.emoji || '🏪'}</div>
+          <div>
+            <div class="s-name">${s.name}</div>
+            <div>
+              <span class="s-stars">${'★'.repeat(Math.floor(s.rating))}${s.rating%1>=0.5?'½':''}</span>
+              <span class="s-rating">${s.rating}</span>
+            </div>
+          </div>
+        </div>
+        <div class="price-row">
+          <span class="p-cur">$</span>
+          <span class="p-main">${s.price.toLocaleString()}</span>
+          ${s.originalPrice && s.originalPrice > s.price ? `<span class="p-orig">$${s.originalPrice.toLocaleString()}</span>` : ''}
+        </div>
+        ${disc > 0 ? `<div class="disc-pill">−${disc}% off</div>` : ''}
+        <div class="tags">
+          <span class="tag ${s.shipping==='Free'?'g':''}">${s.shipping==='Free'?'✓ Free shipping':s.shipping+' shipping'}</span>
+          <span class="tag b">⚡ ${s.delivery}</span>
+          ${i===0 ? '<span class="tag g">🏆 Lowest price</span>' : ''}
+          ${!s.inStock ? '<span class="tag" style="color:var(--red);border-color:rgba(255,69,58,.28)">Out of stock</span>' : ''}
+        </div>
+        <button class="go-btn">View on ${s.name} →</button>
+      </div>
+    `;
+  });
+
+  html += `</div>`;
+
+  if(savings > 0){
+    html += `
+      <div class="save-banner">
+        <div>
+          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:4px">You save up to</div>
+          <div class="save-amt">$${savings.toLocaleString()}</div>
+          <div class="save-sub">Buying from <strong style="color:rgba(255,255,255,0.8)">${sorted[0].name}</strong> vs <strong style="color:rgba(255,255,255,0.8)">${sorted[sorted.length-1].name}</strong></div>
+        </div>
+        <button class="search-btn" onclick="sendPrompt('Find coupon codes or promo discounts for ${product.name} at ${sorted[0].name}')">Find Coupons ↗</button>
+      </div>
+      <div class="alert-box">
+        <div class="alert-icon">🔔</div>
+        <div class="alert-info">
+          <strong>Get a price drop alert</strong>
+          <span>Notify me when ${product.name} drops below $${Math.round(lowest*0.95).toLocaleString()}</span>
+        </div>
+        <button class="alert-cta" onclick="sendPrompt('Set a price drop alert for ${product.name} at $${Math.round(lowest*0.95).toLocaleString()}')">Set Alert</button>
+      </div>
+    `;
+  }
+
+  document.getElementById('resultsArea').innerHTML = html;
+}
+
+function sortBy(btn, type, storesJson){
+  document.querySelectorAll('.fb').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  try {
+    let arr = JSON.parse(storesJson);
+    if(type==='rating') arr.sort((a,b)=>b.rating-a.rating);
+    else if(type==='shipping') arr = [...arr.filter(s=>s.shipping==='Free'), ...arr.filter(s=>s.shipping!=='Free')];
+    const grid = document.getElementById('priceCards');
+    if(grid){
+      const cards = Array.from(grid.children);
+      arr.forEach((s,i)=>{if(cards[i]) cards[i].style.order=i});
+    }
+  } catch(e){}
+}
+
+document.getElementById('q').addEventListener('keydown', e=>{
+  if(e.key==='Enter') startSearch();
+});
+
+renderTrending();
+</script>
+</body>
+</html>
